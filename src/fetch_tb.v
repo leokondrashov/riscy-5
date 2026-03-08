@@ -9,7 +9,7 @@ module fetch_tb;
     fetch uut (.clk(clk), .instruction(instruction));
 
     initial begin
-        $dumpfile("fetch.vcd");
+        $dumpfile("sim/fetch.vcd");
 	$dumpvars;
         clk = 0;
 	#40 $finish;

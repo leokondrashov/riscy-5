@@ -8,7 +8,9 @@ module fetch(input clk,
     reg [7:0] imem[(1<<`IMEM_ADDR_SIZE)-1:0];
 
     initial begin
-        $readmemh("imem.hex", imem);
+        if (`IMEM_INIT_FILE != "") begin
+            $readmemh(`IMEM_INIT_FILE, imem);
+        end
 	PC = `IMEM_ADDR_SIZE'b0;
     end
 
