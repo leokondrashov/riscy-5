@@ -1,12 +1,15 @@
 VERILOG_OPTS=-I include
 
-.PHONY: all test
+.PHONY: all test clean
 
 all: test
 
-test: fetch_test
+test: fetch_test decode_test
 
-fetch_test:
-	iverilog src/fetch.v src/fetch_tb.v ${VERILOG_OPTS} -o sim/fetch_test
-	./sim/fetch_test
-	gtkwave sim/fetch.vcd 2>/dev/null
+%_test: src/%.v src/%_tb.v
+	iverilog $^ ${VERILOG_OPTS} -o sim/$@
+	./sim/$@
+	gtkwave sim/$*.vcd 2>/dev/null
+
+clean:
+	rm sim/* a.out dump.vcd

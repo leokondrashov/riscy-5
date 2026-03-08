@@ -4,4 +4,4 @@
 
 `define DSIZE 32
 `define DMEM_ADDR_SIZE 16
-`define RSIZE 32
+`define RFILE_SIZE 32
