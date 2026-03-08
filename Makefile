@@ -6,6 +6,8 @@ all: test
 
 test: fetch_test decode_test
 
+cpu_test: src/fetch.v src/decode.v
+
 %_test: src/%.v src/%_tb.v
 	iverilog $^ ${VERILOG_OPTS} -o sim/$@
 	./sim/$@

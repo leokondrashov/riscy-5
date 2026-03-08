@@ -10,7 +10,7 @@ module fetch_tb;
 
     initial begin
         $dumpfile("sim/fetch.vcd");
-	$dumpvars;
+        $dumpvars;
         clk = 0;
         #40 $finish;
     end
