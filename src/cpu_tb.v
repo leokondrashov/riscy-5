@@ -13,7 +13,7 @@ module cpu_tb;
         $dumpvars;
         clk = 0; rst = 1;
         #10 rst = 0;
-        #100 $finish;
+        #200 $finish;
     end
 
     always #5 clk = ~clk;

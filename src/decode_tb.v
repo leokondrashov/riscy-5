@@ -5,9 +5,18 @@
 module decode_tb;
     reg clk, rst;
     reg [`ISIZE-1:0] instruction;
-    wire [`DSIZE-1:0] regData;
+    reg [`DSIZE-1:0] wb_data;
+    reg [4:0] wb_rd;
+    reg wb_we;
+    wire [`DSIZE-1:0] data1;
+    wire [`DSIZE-1:0] data2;
+    wire [4:0] rd;
+    wire we;
+    wire [2:0] ALUop;
+    wire [0:0] extra;
 
-    decode uut (.clk(clk), .rst(rst), .instruction(instruction), .regData(regData));
+    decode uut (.clk(clk), .rst(rst), .instruction(instruction), .wb_data(wb_data), .wb_rd(wb_rd), .wb_we(wb_we),
+        .data1(data1), .data2(data2), .rd(rd), .we(we), .ALUop(ALUop), .extra(extra));
 
     initial begin
         $dumpfile("sim/decode.vcd");
@@ -15,13 +24,26 @@ module decode_tb;
         clk = 0;
         rst = 1;
         instruction = 32'b0;
-        #10 rst = 0; instruction = 32'h00f00080; // addi x1, x0, 0xf
-        #10 instruction = 32'h00108100; // addi x2, x1, 0x1
-        // just reading
-        #10 instruction = 32'h00000000; // addi x0, x0, 0x0
-        #10 instruction = 32'h00008000; // addi x0, x1, 0x0
-        #10 instruction = 32'h00010000; // addi x0, x2, 0x0
-        #10 instruction = 32'h00018000; // addi x0, x3, 0x0
+        wb_data = 0;
+        wb_rd = 0;
+        wb_we = 0;
+        #10 rst = 0; instruction = 32'h00f00093; // addi x1, x0, 0xf
+        #10 instruction = 32'h00108113; // addi x2, x1, 0x1
+        #10 instruction = 32'h00500093;
+        #10 instruction = 32'h00008113;
+        #10 instruction = 32'h00502093;
+        #10 instruction = 32'h00503093;
+        #10 instruction = 32'h0010b113;
+        #10 instruction = 32'h00507093;
+        #10 instruction = 32'h00506093;
+        #10 instruction = 32'h00504093;
+        #10 instruction = 32'hfff0c113;
+        #10 instruction = 32'h00509113;
+        #10 instruction = 32'h0050d113;
+        #10 instruction = 32'h4050d113;
+        #10 instruction = 32'h13; wb_data = 32'h0f; wb_rd = 2; wb_we = 1;
+        #10 instruction = 32'h08013; wb_we = 0; wb_rd = 1;
+        #10 instruction = 32'h10013;
         #20 $finish;
     end
 
