@@ -20,7 +20,7 @@ clean:
 test/%.hex: test/%.s
 	riscv64-linux-gnu-as -march=rv32ima test/$*.s -o test/$*.o
 	riscv64-linux-gnu-objcopy -O binary test/$*.o test/$*.bin
-	hexdump test/$*.bin -e '1/1 "%02x" "\n"' > $@
+	xxd -p -c 1 test/$*.bin > $@
 
 addi_test: VERILOG_OPTS += -D IMEM_INIT_FILE_OVERRIDE='"test/addi.hex"'
 addi_test: test/addi.hex cpu_sim
