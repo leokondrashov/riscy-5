@@ -7,16 +7,18 @@ module cpu(input clk,
            output [`DSIZE-1:0] out);
 
     assign out = dataIn1_d;
-    wire [`ISIZE-1:0] instruction_f;
 
-    fetch f(.clk(clk), .instruction(instruction_f));
+    wire [`ISIZE-1:0] instruction_d; // instruction bypasses the buffer
+    wire [`IMEM_ADDR_SIZE-1:0] pc_f;
 
-    reg [`ISIZE-1:0] instruction_d; // pipeline buffer
+    fetch f(.clk(clk), .rst(rst), .instruction(instruction_d), .pc(pc_f));
+
+    reg [`IMEM_ADDR_SIZE-1:0] pc_d; // pipeline buffer
     always @ (posedge clk) begin
         if (rst) begin
-            instruction_d <= 0;
+            pc_d <= 0;
         end else begin
-            instruction_d <= instruction_f;
+            pc_d <= pc_f;
         end
     end
 
@@ -27,7 +29,7 @@ module cpu(input clk,
     wire [2:0] ALUop_d;
     wire [0:0] extra_d;
 
-    decode d(.clk(clk), .rst(rst), .instruction(instruction_d), .wb_data(dataOut_e), .wb_rd(rd_e), .wb_we(we_e),
+    decode d(.clk(clk), .rst(rst), .instruction(instruction_d), .wb_data(dataOut_e), .wb_rd(rd_e), .wb_we(we_e), .pc(pc_d),
     .data1(dataIn1_d), .data2(dataIn2_d), .rd(rd_d), .we(we_d), .ALUop(ALUop_d), .extra(extra_d));
 
     reg [`DSIZE-1:0] dataIn1_e; // pipeline buffer
