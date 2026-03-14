@@ -1,17 +1,27 @@
 VERILOG_OPTS=-I include
 
-.PHONY: all test clean
+.PHONY: all sim clean
 
-all: test
+all: sim
 
-test: fetch_test decode_test
+sim: fetch_sim decode_sim
 
-cpu_test: src/fetch.v src/decode.v
+cpu_sim: src/fetch.v src/decode.v
 
-%_test: src/%.v src/%_tb.v
-	iverilog $^ ${VERILOG_OPTS} -o sim/$@
+%_sim: src/%.v src/%_tb.v
+	iverilog ${VERILOG_OPTS} $^ -o sim/$@
 	./sim/$@
 	gtkwave sim/$*.vcd 2>/dev/null
 
 clean:
-	rm sim/* a.out dump.vcd
+	rm -f sim/* a.out dump.vcd
+	rm -f test/*.o test/*.bin test/*.hex
+
+test/%.hex: test/%.s
+	riscv64-linux-gnu-as -march=rv32ima test/$*.s -o test/$*.o
+	riscv64-linux-gnu-objcopy -O binary test/$*.o test/$*.bin
+	hexdump test/$*.bin -e '1/1 "%02x" "\n"' > $@
+
+addi_test: VERILOG_OPTS += -D IMEM_INIT_FILE_OVERRIDE='"test/addi.hex"'
+addi_test: test/addi.hex cpu_sim
+
