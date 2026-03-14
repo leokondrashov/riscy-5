@@ -24,7 +24,7 @@ test/%.hex: test/%.s
 	riscv64-linux-gnu-objcopy -O binary test/$*.o test/$*.bin
 	xxd -p -c 1 test/$*.bin > $@
 
-%_test: VERILOG_OPTS += -D IMEM_INIT_FILE_OVERRIDE='"test/$*.hex"'
+%_test: VERILOG_OPTS += -D IMEM_INIT_FILE='"test/$*.hex"'
 %_test: test/%.hex ${SRCS} src/cpu_tb.v
 	iverilog ${VERILOG_OPTS} ${SRCS} -s cpu_tb -o sim/$@
 	./sim/$@
