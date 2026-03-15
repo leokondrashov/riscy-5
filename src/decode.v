@@ -14,21 +14,34 @@ module decode(input clk,
               output [`DSIZE-1:0] data2,
               output [4:0] rd,
               output we,
+              output jump,
               output [2:0] ALUop,
               output [0:0] extra);
     integer i;
     reg [`DSIZE-1:0] regFile[`RFILE_SIZE-1:0];
 
-    wire [`DSIZE-1:0] immed = op == `OP_IMM ? {{`DSIZE-12{instruction[31]}}, instruction[31:20]} : {instruction[31:12], 12'b0};
-    wire [4:0] rs1 = instruction[19:15];
-    wire [4:0] rs2 = instruction[24:20];
     wire [6:0] op = instruction[6:0];
 
-    assign data1 = (op == `OP_IMM || op == `OP) ? regFile[rs1] : (op == `LUI ? 0 : pc);
-    assign data2 = op == `OP ? regFile[rs2] : immed;
+    // helpers identifying instruction type
+    wire rtype = op == `OP;
+    wire itype = op == `OP_IMM || op == `JALR;
+    wire stype = 0;
+    wire btype = 0;
+    wire utype = op == `LUI || op == `AUIPC;
+    wire jtype = op == `JAL;
+
+    wire [`DSIZE-1:0] immed = itype ? {{20{instruction[31]}}, instruction[31:20]} :
+        (utype ? {instruction[31:12], 12'b0} :
+        (jtype ? {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0} : 0));
+    wire [4:0] rs1 = instruction[19:15];
+    wire [4:0] rs2 = instruction[24:20];
+
+    assign data1 = (rtype || itype) ? regFile[rs1] : (op == `LUI ? 0 : pc);
+    assign data2 = rtype ? regFile[rs2] : immed;
     assign rd = instruction[11:7];
     assign we = 1;
-    assign ALUop = op == `OP_IMM || op == `OP ? instruction[14:12] : `ADD;
+    assign jump = op == `JAL || op == `JALR;
+    assign ALUop = rtype || itype ? instruction[14:12] : `ADD;
     assign extra = (op == `OP || (op == `OP_IMM && ALUop == `SR)) ? instruction[30:30] : 0;
 
     initial begin

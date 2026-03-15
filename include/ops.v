@@ -3,6 +3,8 @@
 `define LUI 7'h37
 `define AUIPC 7'h17
 `define OP 7'h33
+`define JAL 7'h6f
+`define JALR 7'h67
 
 // ALU operations codes
 `define ADD 0
