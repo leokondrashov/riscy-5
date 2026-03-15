@@ -15,7 +15,8 @@ module execution_tb;
         $dumpvars;
         op = 0; extra = 0; di1 = 0; di2 = 0;
         #10 op = 0; di1 = 1; di2 = 1;
-        #10 op = 1;
+        #10 extra = 1; di1 = 1; di2 = 2;
+        #10 op = 1; extra = 0;
         #10 op = 2; di1 = -1; di2 = 1;
         #10 di1 = 1; di2 = -1; // checking for other way
         #10 op = 3; di1 = -1; di2 = 1;
