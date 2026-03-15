@@ -19,7 +19,6 @@ module decode(input clk,
     integer i;
     reg [`DSIZE-1:0] regFile[`RFILE_SIZE-1:0];
 
-    // works for reg-imm inst only
     wire [`DSIZE-1:0] immed = op == `OP_IMM ? {{`DSIZE-12{instruction[31]}}, instruction[31:20]} : {instruction[31:12], 12'b0};
     wire [4:0] rs1 = instruction[19:15];
     wire [4:0] rs2 = instruction[24:20];
@@ -29,7 +28,7 @@ module decode(input clk,
     assign data2 = op == `OP ? regFile[rs2] : immed;
     assign rd = instruction[11:7];
     assign we = 1;
-    assign ALUop = op == `OP_IMM ? instruction[14:12] : `ADD;
+    assign ALUop = op == `OP_IMM || op == `OP ? instruction[14:12] : `ADD;
     assign extra = (op == `OP || (op == `OP_IMM && ALUop == `SR)) ? instruction[30:30] : 0;
 
     initial begin
