@@ -10,7 +10,7 @@ module execute (input [2:0] op,
                 output reg [`DSIZE-1:0] dataOut);
 
     always @ (*) begin
-        case(op)
+        case (op)
             `ADD: dataOut = extra[0] ? dataIn1 - dataIn2 : dataIn1 + dataIn2;
             `SLT: dataOut = $signed(dataIn1) < $signed(dataIn2) ? 1 : 0;
             `SLTU: dataOut = dataIn1 < dataIn2 ? 1 : 0; // comparison by default is unsigned

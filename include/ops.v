@@ -6,6 +6,8 @@
 `define JAL 7'h6f
 `define JALR 7'h67
 `define BRANCH 7'h63
+`define LOAD 7'h03
+`define STORE 7'h23
 
 // ALU operations codes
 `define ADD 0
@@ -24,3 +26,10 @@
 `define BGE 5
 `define BLTU 6
 `define BGEU 7
+
+// MEM widths
+`define WORD 2
+`define HWORD 1
+`define HWORDU 5
+`define BYTE 0
+`define BYTEU 4
