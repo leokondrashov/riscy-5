@@ -5,9 +5,9 @@ VERILOG_OPTS=-I include
 all: sim
 
 SIMS=fetch_sim decode_sim execution_sim cpu_sim
-sim: ${SIMS}
+sims: ${SIMS}
 
-TESTS=addi_test reg_imm_test reg_reg_test jump_test
+TESTS=addi_test reg_imm_test reg_reg_test jump_test branch_test
 tests: ${TESTS}
 
 SRCS=$(wildcard src/*.v)

@@ -26,22 +26,30 @@ module decode(input clk,
     wire rtype = op == `OP;
     wire itype = op == `OP_IMM || op == `JALR;
     wire stype = 0;
-    wire btype = 0;
+    wire btype = op == `BRANCH;
     wire utype = op == `LUI || op == `AUIPC;
     wire jtype = op == `JAL;
 
     wire [`DSIZE-1:0] immed = itype ? {{20{instruction[31]}}, instruction[31:20]} :
-        (utype ? {instruction[31:12], 12'b0} :
-        (jtype ? {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0} : 0));
+        utype ? {instruction[31:12], 12'b0} :
+        jtype ? {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0} :
+        btype ? {{20{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8], 1'b0} : 0;
     wire [4:0] rs1 = instruction[19:15];
     wire [4:0] rs2 = instruction[24:20];
+    wire [2:0] funct3 = instruction[14:12];
+    wire condition = funct3 == `BEQ ? regFile[rs1] == regFile[rs2] :
+        funct3 == `BNE ? regFile[rs1] != regFile[rs2] :
+        funct3 == `BLT ? $signed(regFile[rs1]) < $signed(regFile[rs2]) :
+        funct3 == `BGE ? $signed(regFile[rs1]) >= $signed(regFile[rs2]) :
+        funct3 == `BLTU ? regFile[rs1] < regFile[rs2] :
+        funct3 == `BGEU ? regFile[rs1] >= regFile[rs2] : 0;
 
     assign data1 = (rtype || itype) ? regFile[rs1] : (op == `LUI ? 0 : pc);
     assign data2 = rtype ? regFile[rs2] : immed;
     assign rd = instruction[11:7];
-    assign we = 1;
-    assign jump = op == `JAL || op == `JALR;
-    assign ALUop = rtype || itype ? instruction[14:12] : `ADD;
+    assign we = op != `BRANCH;
+    assign jump = op == `JAL || op == `JALR || (op == `BRANCH && condition);
+    assign ALUop = rtype || itype ? funct3 : `ADD;
     assign extra = (op == `OP || (op == `OP_IMM && ALUop == `SR)) ? instruction[30:30] : 0;
 
     initial begin

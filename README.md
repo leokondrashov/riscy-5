@@ -14,9 +14,9 @@ Currently implemented:
 - Fetch-decode-execute for instructions:
   - Arithmetic (imm and reg-reg)
   - Jumps
+  - Conditional branches
 
 To Do:
-- Conditional branches
 - Memory
 - Data forwarding
 - Pipeline stalls (where forwaring is not applicable)
@@ -34,7 +34,7 @@ sudo apt install make iverilog xxd binutils-riscv64-linux-gnu gtkwave
 
 To run all simulations in sequence:
 ```
-make sim
+make sims
 ```
 
 Individual: `make <component>_sim`, components: `fetch`, `decode`, `execute`, `cpu`.
@@ -48,6 +48,6 @@ To run all tests in sequence:
 make tests
 ```
 
-Individual: `make <testcase>_test`, testcases: `addi`, `reg_imm`, `reg_reg`, `jump`.
+Individual: `make <testcase>_test`, testcases: `addi`, `reg_imm`, `reg_reg`, `jump`, `branch`.
 
 To run the test, it compiles the `test/<testcase>.s` into binary that can be used as the init file for instruction memory and runs `cpu_sim`.

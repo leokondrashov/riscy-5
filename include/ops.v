@@ -5,6 +5,7 @@
 `define OP 7'h33
 `define JAL 7'h6f
 `define JALR 7'h67
+`define BRANCH 7'h63
 
 // ALU operations codes
 `define ADD 0
@@ -15,3 +16,11 @@
 `define SR 5
 `define OR 6
 `define AND 7
+
+// BRANCH conditions
+`define BEQ 0
+`define BNE 1
+`define BLT 4
+`define BGE 5
+`define BLTU 6
+`define BGEU 7
