@@ -65,7 +65,7 @@ module cpu(input clk,
 
     wire [`DSIZE-1:0] dataOut_e;
 
-    execution e(.dataIn1(dataIn1_e), .dataIn2(dataIn2_e), .op(ALUop_e), .extra(extra_e), .dataOut(dataOut_e));
+    execute e(.dataIn1(dataIn1_e), .dataIn2(dataIn2_e), .op(ALUop_e), .extra(extra_e), .dataOut(dataOut_e));
     wire [`IMEM_ADDR_SIZE-1:0] nextPc = pc_e + 4;
     wire [`DSIZE-1:0] wb_data = jump_e ? {{`DSIZE-`IMEM_ADDR_SIZE{1'b0}}, nextPc} : dataOut_e; // handle writeback to register
 

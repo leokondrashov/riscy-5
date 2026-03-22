@@ -4,7 +4,7 @@ VERILOG_OPTS=-I include
 
 all: sim
 
-SIMS=fetch_sim decode_sim execution_sim
+SIMS=fetch_sim decode_sim execution_sim cpu_sim
 sim: ${SIMS}
 
 TESTS=addi_test reg_imm_test reg_reg_test jump_test
@@ -12,7 +12,7 @@ tests: ${TESTS}
 
 SRCS=$(wildcard src/*.v)
 
-cpu_sim: src/fetch.v src/decode.v src/execution.v
+cpu_sim: src/fetch.v src/decode.v src/execute.v
 
 %_sim: src/%.v src/%_tb.v
 	iverilog ${VERILOG_OPTS} $^ -o sim/$@

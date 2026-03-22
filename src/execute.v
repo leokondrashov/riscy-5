@@ -3,11 +3,11 @@
 `include "define.v"
 `include "ops.v"
 
-module execution (input [2:0] op,
-                  input [0:0] extra, // extra mod of op (logical shift -> arithmetic, add -> sub)
-                  input [`DSIZE-1:0] dataIn1,
-                  input [`DSIZE-1:0] dataIn2,
-                  output reg [`DSIZE-1:0] dataOut);
+module execute (input [2:0] op,
+                input [0:0] extra, // extra mod of op (logical shift -> arithmetic, add -> sub)
+                input [`DSIZE-1:0] dataIn1,
+                input [`DSIZE-1:0] dataIn2,
+                output reg [`DSIZE-1:0] dataOut);
 
     always @ (*) begin
         case(op)

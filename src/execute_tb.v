@@ -2,13 +2,13 @@
 
 `include "define.v"
 
-module execution_tb;
+module execute_tb;
     reg [2:0] op;
     reg [0:0] extra;
     reg [`DSIZE-1:0] di1, di2;
     wire [`DSIZE-1:0] do;
 
-    execution uut (.op(op), .extra(extra), .dataIn1(di1), .dataIn2(di2), .dataOut(do));
+    execute uut (.op(op), .extra(extra), .dataIn1(di1), .dataIn2(di2), .dataOut(do));
 
     initial begin
         $dumpfile("sim/execution.vcd");
