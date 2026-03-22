@@ -8,7 +8,7 @@ After TAing SC2103 (Digital Systems Design) and SC3050 (Advanced Computer Archit
 
 Current pipeline structure:
 
-![Diagram](./pics/riscy-5 diagram.png)
+![Diagram](./pics/riscy-5%20diagram.png)
 
 Currently implemented:
 - Fetch-decode-execute for instructions:
