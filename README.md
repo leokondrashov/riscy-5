@@ -37,7 +37,7 @@ To run all simulations in sequence:
 make sims
 ```
 
-Individual: `make <component>_sim`, components: `fetch`, `decode`, `execute`, `cpu`.
+Individual: `make <component>_sim`, components: `fetch`, `decode`, `execute`, `memory`, `cpu`.
 
 It compiles the testbench with `iverilog`, runs it to get the waveform file, and opens it in gtkwave.
 
@@ -48,6 +48,6 @@ To run all tests in sequence:
 make tests
 ```
 
-Individual: `make <testcase>_test`, testcases: `addi`, `reg_imm`, `reg_reg`, `jump`, `branch`.
+Individual: `make <testcase>_test`, testcases: `addi`, `reg_imm`, `reg_reg`, `jump`, `branch`, `mem`, `fib`.
 
 To run the test, it compiles the `test/<testcase>.s` into binary that can be used as the init file for instruction memory and runs `cpu_sim`.
