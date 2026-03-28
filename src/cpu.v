@@ -34,7 +34,7 @@ module cpu(input clk,
     wire [2:0] ALUop_d;
     wire [0:0] extra_d;
 
-    decode d(.clk(clk), .rst(rst), .instruction(instruction_d), .wb_data(wb_data), .wb_rd(rd_e), .wb_we(we_e), .pc(pc_d),
+    decode d(.clk(clk), .rst(rst), .instruction(instruction_d), .wb_data(wb_data), .wb_rd(rd_w), .wb_we(we_w), .pc(pc_d),
     .data1(dataIn1_d), .data2(dataIn2_d), .rd(rd_d), .we(we_d), .jump(jump_d), .memWidth(memWidth_d), .memWe(memWe_d), .memEn(memEn_d), .memData(memData_d), .ALUop(ALUop_d), .extra(extra_d));
 
     reg [`DSIZE-1:0] dataIn1_e; // pipeline buffer
@@ -119,7 +119,7 @@ module cpu(input clk,
     wire [`DSIZE-1:0] memDataOut_w; // bypasses the pipeline register because already buffered
     memory m(.clk(clk), .rst(rst), .addr(dataOut_m[`DMEM_ADDR_SIZE-1:0]), .we(memWe_m), .en(memEn_m), .dataIn(memData_m), .width(memWidth_m), .data(memDataOut_w));
 
-    reg dataOut_w;
+    reg [`DSIZE-1:0] dataOut_w;
     reg [4:0] rd_w;
     reg we_w;
     reg jump_w;

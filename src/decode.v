@@ -49,10 +49,10 @@ module decode(input clk,
         funct3 == `BLTU ? regFile[rs1] < regFile[rs2] :
         funct3 == `BGEU ? regFile[rs1] >= regFile[rs2] : 0;
 
-    assign data1 = (rtype || itype) ? regFile[rs1] : (op == `LUI ? 0 : pc);
+    assign data1 = (rtype || itype || stype) ? regFile[rs1] : (op == `LUI ? 0 : pc);
     assign data2 = rtype ? regFile[rs2] : immed;
     assign rd = instruction[11:7];
-    assign we = btype || stype;
+    assign we = !btype && !stype;
     assign jump = op == `JAL || op == `JALR || (op == `BRANCH && condition);
     assign ALUop = op == `OP || op == `OP_IMM ? funct3 : `ADD;
     assign extra = (op == `OP || (op == `OP_IMM && ALUop == `SR)) ? instruction[30:30] : 0;
