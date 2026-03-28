@@ -15,9 +15,9 @@ Currently implemented:
   - Arithmetic (imm and reg-reg)
   - Jumps
   - Conditional branches
+  - Memory
 
 To Do:
-- Memory
 - Data forwarding
 - Pipeline stalls (where forwaring is not applicable)
 - Pipeline flush (for bad branch predictions)

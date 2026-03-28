@@ -12,7 +12,7 @@ tests: ${TESTS}
 
 SRCS=$(wildcard src/*.v)
 
-cpu_sim: src/fetch.v src/decode.v src/execute.v
+cpu_sim: src/fetch.v src/decode.v src/execute.v src/memory.v
 
 %_sim: src/%.v src/%_tb.v
 	iverilog ${VERILOG_OPTS} $^ -o sim/$@

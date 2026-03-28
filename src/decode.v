@@ -15,6 +15,10 @@ module decode(input clk,
               output [4:0] rd,
               output we,
               output jump,
+              output [2:0] memWidth,
+              output memWe,
+              output memEn,
+              output [`DSIZE-1:0] memData,
               output [2:0] ALUop,
               output [0:0] extra);
     integer i;
@@ -24,8 +28,8 @@ module decode(input clk,
 
     // helpers identifying instruction type
     wire rtype = op == `OP;
-    wire itype = op == `OP_IMM || op == `JALR;
-    wire stype = 0;
+    wire itype = op == `OP_IMM || op == `JALR || op == `LOAD;
+    wire stype = op == `STORE;
     wire btype = op == `BRANCH;
     wire utype = op == `LUI || op == `AUIPC;
     wire jtype = op == `JAL;
@@ -33,7 +37,8 @@ module decode(input clk,
     wire [`DSIZE-1:0] immed = itype ? {{20{instruction[31]}}, instruction[31:20]} :
         utype ? {instruction[31:12], 12'b0} :
         jtype ? {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0} :
-        btype ? {{20{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8], 1'b0} : 0;
+        btype ? {{20{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8], 1'b0} :
+        stype ? {{20{instruction[31]}}, instruction[31:25], instruction[11:7]} : 0;
     wire [4:0] rs1 = instruction[19:15];
     wire [4:0] rs2 = instruction[24:20];
     wire [2:0] funct3 = instruction[14:12];
@@ -47,10 +52,14 @@ module decode(input clk,
     assign data1 = (rtype || itype) ? regFile[rs1] : (op == `LUI ? 0 : pc);
     assign data2 = rtype ? regFile[rs2] : immed;
     assign rd = instruction[11:7];
-    assign we = op != `BRANCH;
+    assign we = btype || stype;
     assign jump = op == `JAL || op == `JALR || (op == `BRANCH && condition);
-    assign ALUop = rtype || itype ? funct3 : `ADD;
+    assign ALUop = op == `OP || op == `OP_IMM ? funct3 : `ADD;
     assign extra = (op == `OP || (op == `OP_IMM && ALUop == `SR)) ? instruction[30:30] : 0;
+    assign memData = regFile[rs2];
+    assign memEn = op == `LOAD || op == `STORE;
+    assign memWe = op == `STORE;
+    assign memWidth = funct3;
 
     initial begin
         for (i = 0; i < `RFILE_SIZE; i = i + 1) begin

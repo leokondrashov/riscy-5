@@ -13,11 +13,16 @@ module decode_tb;
     wire [`DSIZE-1:0] data2;
     wire [4:0] rd;
     wire we;
+    wire jump;
+    wire [2:0] memWidth;
+    wire memWe;
+    wire memEn;
+    wire [`DSIZE-1:0] memData;
     wire [2:0] ALUop;
     wire [0:0] extra;
 
     decode uut (.clk(clk), .rst(rst), .instruction(instruction), .wb_data(wb_data), .wb_rd(wb_rd), .wb_we(wb_we), .pc(pc),
-        .data1(data1), .data2(data2), .rd(rd), .we(we), .ALUop(ALUop), .extra(extra));
+        .data1(data1), .data2(data2), .rd(rd), .we(we), .jump(jump), .memWidth(memWidth), .memWe(memWe), .memEn(memEn), .memData(memData), .ALUop(ALUop), .extra(extra));
 
     initial begin
         $dumpfile("sim/decode.vcd");
@@ -44,6 +49,8 @@ module decode_tb;
         #10 instruction = 32'h0050d113;
         #10 instruction = 32'h4050d113;
         #10 instruction = 32'h010011b7;
+        #10 instruction = 32'h00412083;
+        #10 instruction = 32'h00112223;
         #10 instruction = 32'h010001b7;
         #10 instruction = 32'h01000217;
         #10 instruction = 32'h13; wb_data = 32'h0f; wb_rd = 2; wb_we = 1;
