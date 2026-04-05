@@ -11,7 +11,7 @@ module cpu(input clk,
     wire [`ISIZE-1:0] instruction_d; // instruction bypasses the buffer
     wire [`IMEM_ADDR_SIZE-1:0] pc_f;
 
-    fetch f(.clk(clk), .rst(rst), .newPC(dataOut_e[`IMEM_ADDR_SIZE-1:0]), .jump(jump_e), .instruction(instruction_d), .pc(pc_f));
+    fetch f(.clk(clk), .rst(rst), .newPC(dataOut_e[`IMEM_ADDR_SIZE-1:0]), .jump(jump_e), .stall(jump_d), .instruction(instruction_d), .pc(pc_f));
 
     reg [`IMEM_ADDR_SIZE-1:0] pc_d; // pipeline buffer
     always @ (posedge clk) begin

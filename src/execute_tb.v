@@ -11,7 +11,7 @@ module execute_tb;
     execute uut (.op(op), .extra(extra), .dataIn1(di1), .dataIn2(di2), .dataOut(do));
 
     initial begin
-        $dumpfile("sim/execution.vcd");
+        $dumpfile("sim/execute.vcd");
         $dumpvars;
         op = 0; extra = 0; di1 = 0; di2 = 0;
         #10 op = 0; di1 = 1; di2 = 1;

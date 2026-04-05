@@ -4,7 +4,7 @@ VERILOG_OPTS=-I include
 
 all: sim
 
-SIMS=fetch_sim decode_sim execution_sim memory_sim cpu_sim
+SIMS=fetch_sim decode_sim execute_sim memory_sim cpu_sim
 sims: ${SIMS}
 
 TESTS=addi_test reg_imm_test reg_reg_test jump_test branch_test

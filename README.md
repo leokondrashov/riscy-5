@@ -11,16 +11,17 @@ Current pipeline structure:
 ![Diagram](./pics/riscy-5%20diagram.png)
 
 Currently implemented:
-- Fetch-decode-execute for instructions:
+- Fetch-decode-execute-memory-writeback for instructions:
   - Arithmetic (imm and reg-reg)
   - Jumps
   - Conditional branches
   - Memory
+- Hazards
+  - Control hazards handling via pipeline stall
 
 To Do:
 - Data forwarding
 - Pipeline stalls (where forwaring is not applicable)
-- Pipeline flush (for bad branch predictions)
 
 # Running
 
