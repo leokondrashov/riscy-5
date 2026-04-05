@@ -18,7 +18,7 @@ module cpu(input clk,
         if (rst) begin
             pc_d <= 0;
         end else begin
-            pc_d <= pc_f;
+            pc_d <= jump_d | jump_e ? pc_d : pc_f; // stall logic for pc propagation
         end
     end
 
