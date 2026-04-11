@@ -13,6 +13,8 @@ module decode(input clk,
               output [`DSIZE-1:0] data1,
               output [`DSIZE-1:0] data2,
               output [4:0] rd,
+              output [4:0] src1,
+              output [4:0] src2,
               output we,
               output jump,
               output [2:0] memWidth,
@@ -50,7 +52,9 @@ module decode(input clk,
         funct3 == `BGEU ? regFile[rs1] >= regFile[rs2] : 0;
 
     assign data1 = (rtype || itype || stype) ? regFile[rs1] : (op == `LUI ? 0 : pc);
+    assign src1 = (rtype || itype || stype) ? rs1 : 0;
     assign data2 = rtype ? regFile[rs2] : immed;
+    assign src2 = rtype ? rs2 : 0;
     assign rd = instruction[11:7];
     assign we = !btype && !stype;
     assign jump = op == `JAL || op == `JALR || (op == `BRANCH && condition);

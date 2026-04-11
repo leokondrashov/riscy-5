@@ -2,16 +2,8 @@
 # include nops to resolve the hazards in design without data forwarding
 main:
     addi x2, x0, 13
-    nop
-    nop
-    nop
     jal x1, fib
-    nop
-    nop
-    nop
     j end
-    nop
-    nop
 
 # takes the arg in x2, x3 is output
 fib:
@@ -20,16 +12,12 @@ fib:
     nop
     nop
     blt x2, x4, return # if input < 1; return 0
-    nop
-    nop
 
 input1:
     addi x3, x0, 1
     nop
     nop
     beq x2, x4, return # if input == 1; return 1
-    nop
-    nop
 
 compute:
     addi x4, x0, 1 # i = 1, since we already have first two values
@@ -39,12 +27,7 @@ compute:
 
 loop:
     addi x4, x4, 1 # i++
-    nop
-    nop
-    nop
     lb x5, -2(x4)
-    nop
-    nop
     nop
     add x3, x3, x5
     nop
@@ -53,9 +36,6 @@ loop:
     sb x3, 0(x4)
 
     bne x2, x4, loop # if i != count, continue counting
-    nop
-    nop
-    nop
 
 return:
     jalr x0, x1
