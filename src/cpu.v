@@ -94,11 +94,16 @@ module cpu(input clk,
         (rs1_e == rd_w) & we_w ? wb_data :
         (rs1_e == rd_x) & we_x ? wb_data_x :
         dataIn1_e;
-    wire [`DSIZE-1:0] dataIn2 = rs2_e == 0 ? dataIn2_e : // case for x0 and non-register sources
+    wire [`DSIZE-1:0] dataIn2 = (rs2_e == 0) | memWe_e ? dataIn2_e : // case for x0 and non-register sources, account for rs2 for stores
         (rs2_e == rd_m) & we_m ? dataOut_m :
         (rs2_e == rd_w) & we_w ? wb_data :
         (rs2_e == rd_x) & we_x ? wb_data_x :
         dataIn2_e;
+    wire [`DSIZE-1:0] memData = (rs2_e == 0) & !memWe_e ? memData_e : // changes only for store instructions
+        (rs2_e == rd_m) & we_m ? dataOut_m :
+        (rs2_e == rd_w) & we_w ? wb_data :
+        (rs2_e == rd_x) & we_x ? wb_data_x :
+        memData_e;
     wire [`DSIZE-1:0] dataOut_e;
     execute e(.dataIn1(dataIn1), .dataIn2(dataIn2), .op(ALUop_e), .extra(extra_e), .dataOut(dataOut_e));
 
@@ -130,7 +135,7 @@ module cpu(input clk,
             memWidth_m <= memWidth_e;
             memWe_m <= memWe_e;
             memEn_m <= memEn_e;
-            memData_m <= memData_e;
+            memData_m <= memData;
             pc_m <= pc_e;
         end
     end

@@ -18,12 +18,13 @@ Currently implemented:
   - Memory
 - Hazards
   - Control hazards handling via pipeline stall
-  - Data Forwarding to exec stage
+  - Data Forwarding
+    - to exec stage (incl addr calc)
+    - to data for stores
 
 To Do:
 - Data Forwarding
   - to branches
-  - to data for stores
 - Pipeline stalls (where forwaring is not applicable)
   - load-use stall (expt load-store)
   - exec-branch & mem-branch stalls

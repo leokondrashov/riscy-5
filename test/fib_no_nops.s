@@ -22,17 +22,12 @@ input1:
 compute:
     addi x4, x0, 1 # i = 1, since we already have first two values
     sb x3, 1(x0) # mem[1] = 1, seed value for the loop
-    nop
-    nop
 
 loop:
     addi x4, x4, 1 # i++
     lb x5, -2(x4)
     nop
     add x3, x3, x5
-    nop
-    nop
-    nop
     sb x3, 0(x4)
 
     bne x2, x4, loop # if i != count, continue counting

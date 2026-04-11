@@ -54,7 +54,7 @@ module decode(input clk,
     assign data1 = (rtype || itype || stype) ? regFile[rs1] : (op == `LUI ? 0 : pc);
     assign src1 = (rtype || itype || stype) ? rs1 : 0;
     assign data2 = rtype ? regFile[rs2] : immed;
-    assign src2 = rtype ? rs2 : 0;
+    assign src2 = rtype | (op == `STORE) ? rs2 : 0;
     assign rd = instruction[11:7];
     assign we = !btype && !stype;
     assign jump = op == `JAL || op == `JALR || (op == `BRANCH && condition);
