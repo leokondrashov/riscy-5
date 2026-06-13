@@ -7,6 +7,7 @@ module fetch(input clk,
              input [`IMEM_ADDR_SIZE-1:0] newPC,
              input jump,
              input stall,
+             input clear,
              output reg [`ISIZE-1:0] instruction,
              output reg [`IMEM_ADDR_SIZE-1:0] pc);
     reg [7:0] imem[(1<<`IMEM_ADDR_SIZE)-1:0];
@@ -24,7 +25,7 @@ module fetch(input clk,
             instruction <= 32'h13; // NOP
         end else begin
             pc <= jump ? newPC : stall ? pc : pc + 4;
-            instruction <= stall | jump ? 'h20013 : {imem[pc+3], imem[pc+2], imem[pc+1], imem[pc]};
+            instruction <= clear ? 'h20013 : stall ? instruction : {imem[pc+3], imem[pc+2], imem[pc+1], imem[pc]};
         end
     end
 

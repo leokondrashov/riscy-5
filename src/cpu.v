@@ -11,14 +11,15 @@ module cpu(input clk,
     wire [`ISIZE-1:0] instruction_d; // instruction bypasses the buffer
     wire [`IMEM_ADDR_SIZE-1:0] pc_f;
 
-    fetch f(.clk(clk), .rst(rst), .newPC(dataOut_e[`IMEM_ADDR_SIZE-1:0]), .jump(jump_e), .stall(jump_d), .instruction(instruction_d), .pc(pc_f));
+    fetch f(.clk(clk), .rst(rst), .newPC(dataOut_e[`IMEM_ADDR_SIZE-1:0]), .jump(jump_e),
+        .clear(jump_d || jump_e), .stall(stall_e), .instruction(instruction_d), .pc(pc_f));
 
     reg [`IMEM_ADDR_SIZE-1:0] pc_d; // pipeline buffer
     always @ (posedge clk) begin
         if (rst) begin
             pc_d <= 0;
         end else begin
-            pc_d <= jump_d | jump_e ? pc_d : pc_f; // stall logic for pc propagation
+            pc_d <= jump_d || jump_e ? 0 : stall_e ? pc_d : pc_f; // stall logic for pc propagation
         end
     end
 
@@ -29,6 +30,7 @@ module cpu(input clk,
     wire [4:0] rs2_d;
     wire we_d;
     wire jump_d;
+    wire ready_d; // tracks whether instruction would be ready at e (1) or m (0) stage
     wire [2:0] memWidth_d;
     wire memWe_d;
     wire memEn_d;
@@ -36,9 +38,13 @@ module cpu(input clk,
     wire [2:0] ALUop_d;
     wire [0:0] extra_d;
 
-    decode d(.clk(clk), .rst(rst), .instruction(instruction_d), .wb_data(wb_data), .wb_rd(rd_w), .wb_we(we_w), .pc(pc_d),
-    .data1(dataIn1_d), .data2(dataIn2_d), .rd(rd_d), .src1(rs1_d), .src2(rs2_d), .we(we_d), .jump(jump_d),
-    .memWidth(memWidth_d), .memWe(memWe_d), .memEn(memEn_d), .memData(memData_d), .ALUop(ALUop_d), .extra(extra_d));
+    decode d(.clk(clk), .rst(rst), .instruction(instruction_d),
+        .wb_data(wb_data), .wb_rd(rd_w), .wb_we(we_w), .pc(pc_d),
+        .data1(dataIn1_d), .data2(dataIn2_d), .rd(rd_d), .src1(rs1_d), .src2(rs2_d), .we(we_d),
+        .jump(jump_d), .readiness(ready_d),
+        .memWidth(memWidth_d), .memWe(memWe_d), .memEn(memEn_d), .memData(memData_d),
+        .ALUop(ALUop_d), .extra(extra_d)
+    );
 
     reg [`DSIZE-1:0] dataIn1_e; // pipeline buffer
     reg [`DSIZE-1:0] dataIn2_e; // pipeline buffer
@@ -47,6 +53,7 @@ module cpu(input clk,
     reg [4:0] rs2_e;
     reg we_e;
     reg jump_e;
+    reg ready_e;
     reg [2:0] memWidth_e;
     reg memWe_e;
     reg memEn_e;
@@ -63,6 +70,7 @@ module cpu(input clk,
             rs2_e <= 0;
             we_e <= 0;
             jump_e <= 0;
+            ready_e <= 1;
             memWidth_e <= 0;
             memWe_e <= 0;
             memEn_e <= 0;
@@ -70,6 +78,22 @@ module cpu(input clk,
             ALUop_e <= 0;
             extra_e <= 0;
             pc_e <= 0;
+        end else if (stall_e) begin
+            dataIn1_e <= dataIn1_e;
+            dataIn2_e <= dataIn2_e;
+            rd_e <= rd_e;
+            rs1_e <= rs1_e;
+            rs2_e <= rs2_e;
+            we_e <= we_e;
+            jump_e <= jump_e;
+            ready_e <= ready_e;
+            memWidth_e <= memWidth_e;
+            memWe_e <= memWe_e;
+            memEn_e <= memEn_e;
+            memData_e <= memData_e;
+            ALUop_e <= ALUop_e;
+            extra_e <= extra_e;
+            pc_e <= pc_e;
         end else begin
             dataIn1_e <= dataIn1_d;
             dataIn2_e <= dataIn2_d;
@@ -78,6 +102,7 @@ module cpu(input clk,
             rs2_e <= rs2_d;
             we_e <= we_d;
             jump_e <= jump_d;
+            ready_e <= ready_d;
             memWidth_e <= memWidth_d;
             memWe_e <= memWe_d;
             memEn_e <= memEn_d;
@@ -88,22 +113,19 @@ module cpu(input clk,
         end
     end
 
+
     // data forwarding for execute stage; x is the fantom stage after wb
-    wire [`DSIZE-1:0] dataIn1 = rs1_e == 0 ? dataIn1_e : // case for x0 and non-register sources
-        (rs1_e == rd_m) & we_m ? dataOut_m :
-        (rs1_e == rd_w) & we_w ? wb_data :
-        (rs1_e == rd_x) & we_x ? wb_data_x :
-        dataIn1_e;
-    wire [`DSIZE-1:0] dataIn2 = (rs2_e == 0) | memWe_e ? dataIn2_e : // case for x0 and non-register sources, account for rs2 for stores
-        (rs2_e == rd_m) & we_m ? dataOut_m :
-        (rs2_e == rd_w) & we_w ? wb_data :
-        (rs2_e == rd_x) & we_x ? wb_data_x :
-        dataIn2_e;
-    wire [`DSIZE-1:0] memData = (rs2_e == 0) & !memWe_e ? memData_e : // changes only for store instructions
-        (rs2_e == rd_m) & we_m ? dataOut_m :
-        (rs2_e == rd_w) & we_w ? wb_data :
-        (rs2_e == rd_x) & we_x ? wb_data_x :
-        memData_e;
+    wire [`DSIZE-1:0] dataIn1;
+    wire [`DSIZE-1:0] dataIn2;
+    wire [`DSIZE-1:0] memData;
+    data_forward df(.readiness(ready_m), .exec_stall(stall_e),
+        .dst_m(we_m ? rd_m : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0),
+        .wb_data_m(dataOut_m), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
+        .src1_e(rs1_e), .src2_e(memWe_e ? 5'b0 : rs2_e), .srcMem_e(memWe_e ? rs2_e : 5'b0),
+        .dataIn1(dataIn1_e), .dataIn2(dataIn2_e), .memData(memData_e),
+        .dataIn1_df(dataIn1), .dataIn2_df(dataIn2), .memData_df(memData)
+    );
+
     wire [`DSIZE-1:0] dataOut_e;
     execute e(.dataIn1(dataIn1), .dataIn2(dataIn2), .op(ALUop_e), .extra(extra_e), .dataOut(dataOut_e));
 
@@ -116,8 +138,9 @@ module cpu(input clk,
     reg memEn_m;
     reg [`DSIZE-1:0] memData_m;
     reg [`IMEM_ADDR_SIZE-1:0] pc_m;
+    reg ready_m;
     always @ (posedge clk) begin
-        if (rst) begin
+        if (rst || stall_e) begin
             dataOut_m <= 0;
             rd_m <= 0;
             we_m <= 0;
@@ -127,6 +150,7 @@ module cpu(input clk,
             memEn_m <= 0;
             memData_m <= 0;
             pc_m <= 0;
+            ready_m <= 1;
         end else begin
             dataOut_m <= dataOut_e;
             rd_m <= rd_e;
@@ -137,6 +161,7 @@ module cpu(input clk,
             memEn_m <= memEn_e;
             memData_m <= memData;
             pc_m <= pc_e;
+            ready_m <= ready_e;
         end
     end
 

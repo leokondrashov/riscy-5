@@ -21,13 +21,15 @@ Currently implemented:
   - Data Forwarding
     - to exec stage (incl addr calc)
     - to data for stores
+  - Stalls where DF doesn't work
+    - load-use stall
 
 To Do:
 - Data Forwarding
   - to branches
 - Pipeline stalls (where forwaring is not applicable)
-  - load-use stall (expt load-store)
   - exec-branch & mem-branch stalls
+- Remove unnecessary stall in load-store scenario
 
 # Running
 

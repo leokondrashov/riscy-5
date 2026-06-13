@@ -73,7 +73,7 @@ out:
     sw x3, 4(x1)
 
     # checking load-use forwarding
-    # intended wb_data: 0x18 (to x2); 0x1c, 0x1c, 0x1c, 0x1c (to x3-x6)
+    # intended wb_data: 0x18 (to x2); (garbage due to stall); 0x1c, 0x1c, 0x1c, 0x1c (to x3-x6)
     lw x2, 4(x1)
     addi x3, x2, 4
     addi x4, x2, 4

@@ -22,7 +22,8 @@ module decode(input clk,
               output memEn,
               output [`DSIZE-1:0] memData,
               output [2:0] ALUop,
-              output [0:0] extra);
+              output [0:0] extra,
+              output readiness); // encodes whether the result is ready after exec (1) or mem (0) stage
     integer i;
     reg [`DSIZE-1:0] regFile[`RFILE_SIZE-1:0];
 
@@ -64,6 +65,7 @@ module decode(input clk,
     assign memEn = op == `LOAD || op == `STORE;
     assign memWe = op == `STORE;
     assign memWidth = funct3;
+    assign readiness = !(op == `LOAD || op == `JAL || op == `JALR);
 
     initial begin
         for (i = 0; i < `RFILE_SIZE; i = i + 1) begin
