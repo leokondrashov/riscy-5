@@ -7,7 +7,7 @@ all: sim
 SIMS=fetch_sim decode_sim execute_sim memory_sim cpu_sim data_forward_sim
 sims: ${SIMS}
 
-TESTS=addi_test reg_imm_test reg_reg_test jump_test branch_test
+TESTS=addi_test reg_imm_test reg_reg_test jump_test branch_test forwarding
 tests: ${TESTS}
 
 SRCS=$(wildcard src/*.v)

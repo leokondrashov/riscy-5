@@ -52,6 +52,60 @@ out:
     nop
     nop
 
+    # checking for branching after jal
+    # intended jump_d high on pc_d = 0x9c
+    addi x2, x0, 0x98
+    jal x1, l2
+l2: beq x2, x1, out2
+    beq x2, x1, out2
+    beq x2, x1, out2
+    beq x2, x1, out2
+
+out2:
+    nop
+    nop
+    nop
+    nop
+
+    # checking for branching after load
+    # intended jump_d high on pc_d = 0xd0
+    addi x2, x0, 40
+    nop
+    nop
+    nop
+    sw x2, 0(x0)
+    lw x1, 0(x0)
+    beq x2, x1, out3
+    beq x2, x1, out3
+    beq x2, x1, out3
+    beq x2, x1, out3
+
+out3:
+    nop
+    nop
+    nop
+    nop
+
+    # checking for branching after load (with only 1 stall needed)
+    # intended jump_d high on pc_d = 0x10c
+    addi x2, x0, 41
+    nop
+    nop
+    nop
+    sw x2, 0(x0)
+    lw x1, 0(x0)
+    nop
+    beq x2, x1, out4
+    beq x2, x1, out4
+    beq x2, x1, out4
+    beq x2, x1, out4
+
+out4:
+    nop
+    nop
+    nop
+    nop
+
     addi x2, x0, 42
     nop
     nop
