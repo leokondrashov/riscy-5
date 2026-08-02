@@ -21,14 +21,16 @@ Currently implemented:
   - Data Forwarding
     - to exec stage (incl addr calc)
     - to data for stores
+    - to branches
   - Stalls where DF doesn't work
     - load-use stall (excl, load-store)
+    - exec-branch and mem-branch stalls
 
 To Do:
-- Data Forwarding
-  - to branches
-- Pipeline stalls (where forwaring is not applicable)
-  - exec-branch & mem-branch stalls
+- Auto testing of interactions to verify correctness
+- Timing analysis & optimizations
+- FPGA implementation
+  - IO and interfaces to communicate with outside world
 
 # Running
 
@@ -45,7 +47,7 @@ To run all simulations in sequence:
 make sims
 ```
 
-Individual: `make <component>_sim`, components: `fetch`, `decode`, `execute`, `memory`, `cpu`.
+Individual: `make <component>_sim`, components: `fetch`, `decode`, `execute`, `memory`, `cpu`, `data_forwarding`.
 
 It compiles the testbench with `iverilog`, runs it to get the waveform file, and opens it in gtkwave.
 
@@ -56,6 +58,6 @@ To run all tests in sequence:
 make tests
 ```
 
-Individual: `make <testcase>_test`, testcases: `addi`, `reg_imm`, `reg_reg`, `jump`, `branch`, `mem`, `fib`.
+Individual: `make <testcase>_test`, testcases: `addi`, `reg_imm`, `reg_reg`, `jump`, `branch`, `mem`, `fib`, `forwarding`, `fib_no_nops`.
 
 To run the test, it compiles the `test/<testcase>.s` into binary that can be used as the init file for instruction memory and runs `cpu_sim`.

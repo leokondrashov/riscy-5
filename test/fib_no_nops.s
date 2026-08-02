@@ -9,14 +9,10 @@ main:
 fib:
     addi x4, x0, 1
     xor x3, x3, x3
-    nop
-    nop
     blt x2, x4, return # if input < 1; return 0
 
 input1:
     addi x3, x0, 1
-    nop
-    nop
     beq x2, x4, return # if input == 1; return 1
 
 compute:

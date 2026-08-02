@@ -12,14 +12,14 @@ module cpu(input clk,
     wire [`IMEM_ADDR_SIZE-1:0] pc_f;
 
     fetch f(.clk(clk), .rst(rst), .newPC(dataOut_e[`IMEM_ADDR_SIZE-1:0]), .jump(jump_e),
-        .clear(jump_d || jump_e), .stall(stall_e), .instruction(instruction_d), .pc(pc_f));
+        .clear(jump_d || jump_e), .stall(stall_e || stall_d), .instruction(instruction_d), .pc(pc_f));
 
     reg [`IMEM_ADDR_SIZE-1:0] pc_d; // pipeline buffer
     always @ (posedge clk) begin
         if (rst) begin
             pc_d <= 0;
         end else begin
-            pc_d <= jump_d || jump_e ? 0 : stall_e ? pc_d : pc_f; // stall logic for pc propagation
+            pc_d <= jump_d || jump_e ? 0 : (stall_e || stall_d) ? pc_d : pc_f; // stall logic for pc propagation
         end
     end
 
@@ -27,6 +27,8 @@ module cpu(input clk,
     wire [`DSIZE-1:0] dataIn2_d;
     wire [`DSIZE-1:0] regData1;
     wire [`DSIZE-1:0] regData2;
+    wire [`DSIZE-1:0] dfRegData1;
+    wire [`DSIZE-1:0] dfRegData2;
     wire [4:0] rd_d;
     wire [4:0] src1_d;
     wire [4:0] src2_d;
@@ -40,15 +42,29 @@ module cpu(input clk,
     wire memEn_d;
     wire [2:0] ALUop_d;
     wire [0:0] extra_d;
+    wire stall_d;
 
     decode d(.clk(clk), .rst(rst), .instruction(instruction_d),
         .wb_data(wb_data), .wb_rd(rd_w), .wb_we(we_w), .pc(pc_d),
         .data1(dataIn1_d), .data2(dataIn2_d), .rd(rd_d), .src1(src1_d), .src2(src2_d), .we(we_d),
         .regData1(regData1), .regData2(regData2), .rs1(rs1_d), .rs2(rs2_d),
+        .dfData1(dfRegData1), .dfData2(dfRegData2),
         .jump(jump_d), .readiness(ready_d),
-        .memWidth(memWidth_d), .memWe(memWe_d), .memEn(memEn_d),
+        .memWidth(memWidth_d), .memWe(memWe_d), .memEn(memEn_d), .branch(branch),
         .ALUop(ALUop_d), .extra(extra_d)
     );
+    data_forward df_d1(.readiness(ready_m), .stall(stall_d1),
+        .dst_m(we_m ? rd_m : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0),
+        .wb_data_m(dataOut_m), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
+        .src(rs1_d), .pipelineData(regData1), .dfResult(dfRegData1)
+    );
+    data_forward df_d2(.readiness(ready_m), .stall(stall_d2),
+        .dst_m(we_m ? rd_m : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0),
+        .wb_data_m(dataOut_m), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
+        .src(rs2_d), .pipelineData(regData2), .dfResult(dfRegData2)
+    );
+
+    assign stall_d = (stall_d1 || stall_d2 || (rs1_d == rd_e) || (rs2_d == rd_e)) && branch;
 
     wire [`DSIZE-1:0] memData_d;
     assign memData_d = memWe_d ? regData2 : 0;

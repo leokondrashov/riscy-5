@@ -10,6 +10,8 @@ module decode(input clk,
               input [4:0] wb_rd,
               input wb_we,
               input [`IMEM_ADDR_SIZE-1:0] pc,
+              input [`DSIZE-1:0] dfData1,
+              input [`DSIZE-1:0] dfData2,
               output [`DSIZE-1:0] data1,
               output [`DSIZE-1:0] data2,
               output [`DSIZE-1:0] regData1,
@@ -21,6 +23,7 @@ module decode(input clk,
               output [4:0] rs2,
               output we,
               output jump,
+              output branch,
               output [2:0] memWidth,
               output memWe,
               output memEn,
@@ -46,12 +49,12 @@ module decode(input clk,
         btype ? {{20{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8], 1'b0} :
         stype ? {{20{instruction[31]}}, instruction[31:25], instruction[11:7]} : 0;
     wire [2:0] funct3 = instruction[14:12];
-    wire condition = funct3 == `BEQ ? regFile[rs1] == regFile[rs2] :
-        funct3 == `BNE ? regFile[rs1] != regFile[rs2] :
-        funct3 == `BLT ? $signed(regFile[rs1]) < $signed(regFile[rs2]) :
-        funct3 == `BGE ? $signed(regFile[rs1]) >= $signed(regFile[rs2]) :
-        funct3 == `BLTU ? regFile[rs1] < regFile[rs2] :
-        funct3 == `BGEU ? regFile[rs1] >= regFile[rs2] : 0;
+    wire condition = funct3 == `BEQ ? dfData1 == dfData2 :
+        funct3 == `BNE ? dfData1 != dfData2 :
+        funct3 == `BLT ? $signed(dfData1) < $signed(dfData2) :
+        funct3 == `BGE ? $signed(dfData1) >= $signed(dfData2) :
+        funct3 == `BLTU ? dfData1 < dfData2 :
+        funct3 == `BGEU ? dfData1 >= dfData2 : 0;
 
     assign rs1 = instruction[19:15];
     assign regData1 = regFile[rs1];
@@ -64,6 +67,7 @@ module decode(input clk,
     assign rd = instruction[11:7];
     assign we = !btype && !stype;
     assign jump = op == `JAL || op == `JALR || (op == `BRANCH && condition);
+    assign branch = btype;
     assign ALUop = op == `OP || op == `OP_IMM ? funct3 : `ADD;
     assign extra = (op == `OP || (op == `OP_IMM && ALUop == `SR)) ? instruction[30:30] : 0;
     assign memEn = op == `LOAD || op == `STORE;
