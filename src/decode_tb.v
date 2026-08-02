@@ -17,12 +17,11 @@ module decode_tb;
     wire [2:0] memWidth;
     wire memWe;
     wire memEn;
-    wire [`DSIZE-1:0] memData;
     wire [2:0] ALUop;
     wire [0:0] extra;
 
     decode uut (.clk(clk), .rst(rst), .instruction(instruction), .wb_data(wb_data), .wb_rd(wb_rd), .wb_we(wb_we), .pc(pc),
-        .data1(data1), .data2(data2), .rd(rd), .we(we), .jump(jump), .memWidth(memWidth), .memWe(memWe), .memEn(memEn), .memData(memData), .ALUop(ALUop), .extra(extra));
+        .data1(data1), .data2(data2), .rd(rd), .we(we), .jump(jump), .memWidth(memWidth), .memWe(memWe), .memEn(memEn), .ALUop(ALUop), .extra(extra));
 
     initial begin
         $dumpfile("sim/decode.vcd");

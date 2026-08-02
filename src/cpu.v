@@ -25,7 +25,11 @@ module cpu(input clk,
 
     wire [`DSIZE-1:0] dataIn1_d;
     wire [`DSIZE-1:0] dataIn2_d;
+    wire [`DSIZE-1:0] regData1;
+    wire [`DSIZE-1:0] regData2;
     wire [4:0] rd_d;
+    wire [4:0] src1_d;
+    wire [4:0] src2_d;
     wire [4:0] rs1_d;
     wire [4:0] rs2_d;
     wire we_d;
@@ -34,22 +38,26 @@ module cpu(input clk,
     wire [2:0] memWidth_d;
     wire memWe_d;
     wire memEn_d;
-    wire [`DSIZE-1:0] memData_d;
     wire [2:0] ALUop_d;
     wire [0:0] extra_d;
 
     decode d(.clk(clk), .rst(rst), .instruction(instruction_d),
         .wb_data(wb_data), .wb_rd(rd_w), .wb_we(we_w), .pc(pc_d),
-        .data1(dataIn1_d), .data2(dataIn2_d), .rd(rd_d), .src1(rs1_d), .src2(rs2_d), .we(we_d),
+        .data1(dataIn1_d), .data2(dataIn2_d), .rd(rd_d), .src1(src1_d), .src2(src2_d), .we(we_d),
+        .regData1(regData1), .regData2(regData2), .rs1(rs1_d), .rs2(rs2_d),
         .jump(jump_d), .readiness(ready_d),
-        .memWidth(memWidth_d), .memWe(memWe_d), .memEn(memEn_d), .memData(memData_d),
+        .memWidth(memWidth_d), .memWe(memWe_d), .memEn(memEn_d),
         .ALUop(ALUop_d), .extra(extra_d)
     );
+
+    wire [`DSIZE-1:0] memData_d;
+    assign memData_d = memWe_d ? regData2 : 0;
 
     reg [`DSIZE-1:0] dataIn1_e; // pipeline buffer
     reg [`DSIZE-1:0] dataIn2_e; // pipeline buffer
     reg [4:0] rd_e;
-    reg [4:0] rs1_e;
+    reg [4:0] src1_e;
+    reg [4:0] src2_e;
     reg [4:0] rs2_e;
     reg we_e;
     reg jump_e;
@@ -66,7 +74,8 @@ module cpu(input clk,
             dataIn1_e <= 0;
             dataIn2_e <= 0;
             rd_e <= 0;
-            rs1_e <= 0;
+            src1_e <= 0;
+            src2_e <= 0;
             rs2_e <= 0;
             we_e <= 0;
             jump_e <= 0;
@@ -82,7 +91,8 @@ module cpu(input clk,
             dataIn1_e <= dataIn1_e;
             dataIn2_e <= dataIn2_e;
             rd_e <= rd_e;
-            rs1_e <= rs1_e;
+            src1_e <= src1_e;
+            src2_e <= src2_e;
             rs2_e <= rs2_e;
             we_e <= we_e;
             jump_e <= jump_e;
@@ -98,7 +108,8 @@ module cpu(input clk,
             dataIn1_e <= dataIn1_d;
             dataIn2_e <= dataIn2_d;
             rd_e <= rd_d;
-            rs1_e <= rs1_d;
+            src1_e <= src1_d;
+            src2_e <= src2_d;
             rs2_e <= rs2_d;
             we_e <= we_d;
             jump_e <= jump_d;
@@ -122,12 +133,12 @@ module cpu(input clk,
     data_forward df_e1(.readiness(ready_m), .stall(stall_e1),
         .dst_m(we_m ? rd_m : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0),
         .wb_data_m(dataOut_m), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
-        .src(rs1_e), .pipelineData(dataIn1_e), .dfResult(dataIn1)
+        .src(src1_e), .pipelineData(dataIn1_e), .dfResult(dataIn1)
     );
     data_forward df_e2(.readiness(ready_m), .stall(stall_e2),
         .dst_m(we_m ? rd_m : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0),
         .wb_data_m(dataOut_m), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
-        .src(memWe_e ? 5'b0 : rs2_e), .pipelineData(dataIn2_e), .dfResult(dataIn2)
+        .src(src2_e), .pipelineData(dataIn2_e), .dfResult(dataIn2)
     );
 
     wire [`DSIZE-1:0] dataOut_e;
@@ -177,7 +188,7 @@ module cpu(input clk,
     data_forward df_m(.readiness(1'b1), // m is ready by that point, hence readiness is 1, no stall
         .dst_m(we_xx ? rd_xx : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0), // move m to xx, since m would forward from itself
         .wb_data_m(wb_data_xx), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
-        .src(memWe_m ? rs2_m : 5'b0), .pipelineData(memData_m), .dfResult(memData)
+        .src(rs2_m), .pipelineData(memData_m), .dfResult(memData)
     );
 
     memory m(.clk(clk), .rst(rst), .addr(dataOut_m[`DMEM_ADDR_SIZE-1:0]), .we(memWe_m), .en(memEn_m), .dataIn(memData), .width(memWidth_m), .data(memDataOut_w));
