@@ -26,7 +26,6 @@ compute:
 loop:
     addi x4, x4, 1 # i++
     lb x5, -2(x4)
-    nop
     add x3, x3, x5
     sb x3, 0(x4)
 

@@ -117,13 +117,17 @@ module cpu(input clk,
     // data forwarding for execute stage; x is the fantom stage after wb
     wire [`DSIZE-1:0] dataIn1;
     wire [`DSIZE-1:0] dataIn2;
-    wire [`DSIZE-1:0] memData;
-    data_forward df(.readiness(ready_m), .exec_stall(stall_e),
+    wire stall_e1, stall_e2;
+    assign stall_e = stall_e1 || stall_e2;
+    data_forward df_e1(.readiness(ready_m), .stall(stall_e1),
         .dst_m(we_m ? rd_m : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0),
         .wb_data_m(dataOut_m), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
-        .src1_e(rs1_e), .src2_e(memWe_e ? 5'b0 : rs2_e), .srcMem_e(memWe_e ? rs2_e : 5'b0),
-        .dataIn1(dataIn1_e), .dataIn2(dataIn2_e), .memData(memData_e),
-        .dataIn1_df(dataIn1), .dataIn2_df(dataIn2), .memData_df(memData)
+        .src(rs1_e), .pipelineData(dataIn1_e), .dfResult(dataIn1)
+    );
+    data_forward df_e2(.readiness(ready_m), .stall(stall_e2),
+        .dst_m(we_m ? rd_m : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0),
+        .wb_data_m(dataOut_m), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
+        .src(memWe_e ? 5'b0 : rs2_e), .pipelineData(dataIn2_e), .dfResult(dataIn2)
     );
 
     wire [`DSIZE-1:0] dataOut_e;
@@ -131,6 +135,7 @@ module cpu(input clk,
 
     reg [`DSIZE-1:0] dataOut_m;
     reg [4:0] rd_m;
+    reg [4:0] rs2_m;
     reg we_m;
     reg jump_m;
     reg [2:0] memWidth_m;
@@ -143,6 +148,7 @@ module cpu(input clk,
         if (rst || stall_e) begin
             dataOut_m <= 0;
             rd_m <= 0;
+            rs2_m <= 0;
             we_m <= 0;
             jump_m <= 0;
             memWidth_m <= 0;
@@ -154,19 +160,27 @@ module cpu(input clk,
         end else begin
             dataOut_m <= dataOut_e;
             rd_m <= rd_e;
+            rs2_m <= rs2_e;
             we_m <= we_e;
             jump_m <= jump_e;
             memWidth_m <= memWidth_e;
             memWe_m <= memWe_e;
             memEn_m <= memEn_e;
-            memData_m <= memData;
+            memData_m <= memData_e;
             pc_m <= pc_e;
             ready_m <= ready_e;
         end
     end
 
     wire [`DSIZE-1:0] memDataOut_w; // bypasses the pipeline register because already buffered
-    memory m(.clk(clk), .rst(rst), .addr(dataOut_m[`DMEM_ADDR_SIZE-1:0]), .we(memWe_m), .en(memEn_m), .dataIn(memData_m), .width(memWidth_m), .data(memDataOut_w));
+    wire [`DSIZE-1:0] memData;
+    data_forward df_m(.readiness(1'b1), // m is ready by that point, hence readiness is 1, no stall
+        .dst_m(we_xx ? rd_xx : 5'b0), .dst_w(we_w ? rd_w : 5'b0), .dst_x(we_x ? rd_x : 5'b0), // move m to xx, since m would forward from itself
+        .wb_data_m(wb_data_xx), .wb_data_w(wb_data), .wb_data_x(wb_data_x),
+        .src(memWe_m ? rs2_m : 5'b0), .pipelineData(memData_m), .dfResult(memData)
+    );
+
+    memory m(.clk(clk), .rst(rst), .addr(dataOut_m[`DMEM_ADDR_SIZE-1:0]), .we(memWe_m), .en(memEn_m), .dataIn(memData), .width(memWidth_m), .data(memDataOut_w));
 
     reg [`DSIZE-1:0] dataOut_w;
     reg [4:0] rd_w;
@@ -211,6 +225,24 @@ module cpu(input clk,
             wb_data_x <= wb_data;
             rd_x <= rd_w;
             we_x <= we_w;
+        end
+    end
+
+    // registers for data forwarding from shadow stage (needed for stores,
+    // since forwarding is done at m stage, propely written back data arrives
+    // a cycle later, so need to add extra shadow stage)
+    reg [`DSIZE-1:0] wb_data_xx;
+    reg [4:0] rd_xx;
+    reg we_xx;
+    always @ (posedge clk) begin
+        if (rst) begin
+            wb_data_xx <= 0;
+            rd_xx <= 0;
+            we_xx <= 0;
+        end else begin
+            wb_data_xx <= wb_data_x;
+            rd_xx <= rd_x;
+            we_xx <= we_x;
         end
     end
 

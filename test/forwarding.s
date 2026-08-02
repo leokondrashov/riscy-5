@@ -65,7 +65,7 @@ out:
     sw x2, 0(x1)
 
     # checking the dataIn for stores
-    # intended memData_m: 0x18, 0x18, 0x18, 0x18
+    # intended memData: 0x18, 0x18, 0x18, 0x18
     addi x3, x0, 24
     sw x3, 4(x1)
     sw x3, 4(x1)
@@ -79,3 +79,14 @@ out:
     addi x4, x2, 4
     addi x5, x2, 4
     addi x6, x2, 4
+
+    # checking the dataIn for stores generated from loads
+    # intended memData: 0x18, 0x18, 0x18, 0x18
+    lw x4, 4(x1)
+    sw x4, 8(x1)
+    sw x4, 8(x1)
+    sw x4, 8(x1)
+    sw x4, 8(x1)
+
+    nop
+    nop
